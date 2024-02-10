@@ -23,7 +23,7 @@ const highlightHandler = function(evt){
 const buttonClickHandler = function (evt) {
     let buttonValue = evt.target.innerText;
     if (activePara) {
-        if (buttonValue === '<-') {
+        if (buttonValue === '⇦') {
             if (activePara.innerText === "0|") {
                 buttonValue = "0|";
             } else {
@@ -32,7 +32,6 @@ const buttonClickHandler = function (evt) {
             }
         } else if (buttonValue === 'C') {
             activePara.innerText = "0|";
-              // Exit early to prevent further execution of the function
         } else if (activePara.innerText === "0|") {
             activePara.innerText = buttonValue + '|';
         } else if (activePara === distancePara && distancePara.innerText.length  > 5) {
@@ -62,6 +61,84 @@ const resultHandler = function (evt){
     }
 
 };
+let startLat,startLon,startTime;
+const startHandler = function (evt){
+    let button = evt.target.innerText;
+    let value = document.getElementById('start');
+    if(button === 'Start'){
+        navigator.geolocation.watchPosition(showPosition);
+        startTime = Date.now();
+        value.innerHTML = 'Stop';
+    } else if(button === 'Stop') {
+        value.innerText = 'Start';
+        navigator.geolocation.clearWatch(showPosition);
+        startLat = null;
+        startLon = null;
+    }
+
+
+};
+
+function showPosition(position) {
+    if(!startLat || !startLon){
+        startLat = position.coords.latitude;
+        startLon = position.coords.longitude;
+    } else {
+        let distance = calculateDistance(position);
+        document.getElementById('livedistance').innerText = distance.toFixed(0) + 'km';
+        calculatePace(distance);
+    }
+}
+function calculateDistance(position){
+        let finalLat = position.coords.latitude;
+        let finalLon = position.coords.longitude;
+        const r = 6371;
+        let lat = (finalLat - startLat) * (Math.PI / 180);
+        let lon = (finalLon - startLon) * (Math.PI / 180);
+
+    let a =
+        Math.sin(lat / 2) * Math.sin(lat / 2) +
+        Math.cos((Math.PI /180) * (startLat)) * Math.cos((Math.PI/180) * (finalLat)) * Math.sin(lon / 2) * Math.sin(lon / 2);
+
+    let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return r * c;
+
+
+}
+
+function calculatePace(distance){
+    let timeTaken = Date.now() - startTime;
+    timeTaken /= 60000;
+    let pace = timeTaken /distance;
+    document.getElementById('livepace').innerText = pace.toFixed(0) + 'mins/km';
+
+
+
+}
+
+
+const inclineHandler = function (event){
+    let inclinePara = document.getElementById('incline');
+    let slopeType = '';
+    let gamma = event.gamma;
+    let beta = event.beta;
+
+    let degree = Math.atan2(beta,gamma) * (180/Math.PI);
+
+    let percentage = Math.abs(Math.tan(degree) * 100);
+
+    if(degree < 0){
+        slopeType = 'Downhill';
+    } else{
+        slopeType = 'Uphill';
+    }
+
+    inclinePara.innerText = `◬ ${percentage}% ${slopeType}(${degree}°) ◬`;
+    setTimeout(function (){
+        inclinePara.innerText = '◬ Tap to show incline ◬';
+    },30000);
+
+};
 
 const init = function() {
     timePara = document.getElementById("time");
@@ -87,7 +164,8 @@ const init = function() {
     document.getElementById("b9").addEventListener("click", buttonClickHandler);
     document.getElementById("clear").addEventListener("click", buttonClickHandler);
     document.getElementById("left").addEventListener("click", buttonClickHandler);
-
+    document.getElementById("start").addEventListener("click",startHandler);
+    document.getElementById("incline").addEventListener("click",inclineHandler);
 
 
 };
