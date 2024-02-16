@@ -4,10 +4,11 @@ let timePara;
 let distancePara;
 let pacePara;
 let activePara;
+let startLat;
+let startLon;
 let startTime;
 let isStarted = false;
-let prev;
-let totalDistance;
+
 
 
 const highlightHandler = function(evt){
@@ -22,7 +23,6 @@ const highlightHandler = function(evt){
         if (!activePara.innerText.includes('|')) {
             activePara.innerText += '|';
             activePara.style.color='red';
-
 
 
         }
@@ -85,35 +85,32 @@ const startHandler = function (evt){
     } else if(button === 'Stop') {
         value.innerText = 'Start';
         navigator.geolocation.clearWatch(showPosition);
-        prev = null;
+        startLat = null;
+        startLon = null;
         isStarted = false;
     }
 };
 
 function showPosition(position) {
     if(isStarted) {
-        if(!prev){
-            prev = position.coords;
+        if(!startLat || !startLon){
+            startLat = position.coords.latitude;
+            startLon = position.coords.longitude;
         } else {
-            let current = position.coords;
-            let distance = calculateDistance(prev, current);
-            totalDistance += distance;
-            totalDistance =  distance * 1000;
+            let distance = calculateDistance(position);
+            distance =  distance * 1000;
             document.getElementById('livedistance').innerText = distance.toFixed(0) + 'm';
             calculatePace(distance);
-            prev = current;
         }
     }
 }
 
-function calculateDistance(prev,current){ //https://stackoverflow.com/questions/14560999/using-the-haversine-formula-in-javascript
-        let finalLat = current.coords.latitude;
-        let finalLon = current.coords.longitude;
-        let startLat = prev.coords.latitude;
-        let startLon = prev.coords.longitude;
-        const r = 6371;
-        let lat = (finalLat - startLat) * (Math.PI / 180);
-        let lon = (finalLon - startLon) * (Math.PI / 180);
+function calculateDistance(position){
+    let finalLat = position.coords.latitude;
+    let finalLon = position.coords.longitude;
+    const r = 6371;
+    let lat = (finalLat - startLat) * (Math.PI / 180);
+    let lon = (finalLon - startLon) * (Math.PI / 180);
 
     let a =
         Math.sin(lat / 2) * Math.sin(lat / 2) +
@@ -191,10 +188,12 @@ const init = function() {
     activePara.innerText += '|';
     activePara.style.color='red';
     if (window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission === "function") {
+        // Display a button for iOS users to request permission
         document.getElementById("incline").addEventListener("click", () => {
             DeviceOrientationEvent.requestPermission()
                 .then((response) => {
                     if (response === "granted") {
+                        // Permission granted, add event listeners
                         window.addEventListener("deviceorientation", orientationHandler);
                     } else {
                         window.alert("Permission is needed!");
@@ -203,6 +202,10 @@ const init = function() {
                 .catch(() => window.alert("Not supported"));
         });
     } else {
+        // Standard code without need for permission
+        if (window.DeviceMotionEvent) {
+            window.addEventListener("devicemotion", startHandler);
+        }
         if (window.DeviceOrientationEvent) {
             window.addEventListener("deviceorientation", orientationHandler);
         }

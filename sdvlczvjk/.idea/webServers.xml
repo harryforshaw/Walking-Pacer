@@ -2,7 +2,7 @@
 <project version="4">
   <component name="WebServers">
     <option name="servers">
-      <webServer id="4f876abe-6f85-4ba3-9801-568080ebde43" name="devweb2023" url="https://devweb2023.cis.strath.ac.uk/~drb20138">
+      <webServer id="4f876abe-6f85-4ba3-9801-568080ebde43" name="devweb2023" url="https://devweb2023.cis.strath.ac.uk/~drb20138/">
         <fileTransfer rootFolder="//home/drb20138/DEVWEB/2023" accessType="SFTP" host="cafe.cis.strath.ac.uk" port="22" sshConfigId="3820c339-781a-4e60-bf45-2ffe895cc9f4" sshConfig="devweb2023ssh">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
