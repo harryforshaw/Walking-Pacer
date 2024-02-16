@@ -12,8 +12,6 @@ let isStarted = false;
 
 
 const highlightHandler = function(evt){
-    //Handles clicks on a button
-    //The property evt.target.innerText is the content of the button as displayed on screen
     if(evt.target !== activePara) {
         if (activePara) {
             activePara.innerText = activePara.innerText.replace('|', '');
@@ -105,7 +103,7 @@ function showPosition(position) {
     }
 }
 
-function calculateDistance(position){
+function calculateDistance(position){ // https://stackoverflow.com/questions/14560999/using-the-haversine-formula-in-javascript 
     let finalLat = position.coords.latitude;
     let finalLon = position.coords.longitude;
     const r = 6371;
@@ -134,7 +132,6 @@ function calculatePace(distance){
 const orientationHandler = function(event) {
 
     let inclinePara = document.getElementById('incline');
-    inclinePara.style.color = 'red';
     let slopeType = '';
 
     let degree = event.beta;
@@ -152,6 +149,7 @@ const orientationHandler = function(event) {
 
 
         inclinePara.innerText = `◬ ${percentage.toFixed(0)}% ${slopeType}(${degree.toFixed(0)}°) ◬`;
+        inclinePara.style.color = 'red';
 
     }
     setTimeout(function (){
@@ -188,12 +186,10 @@ const init = function() {
     activePara.innerText += '|';
     activePara.style.color='red';
     if (window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission === "function") {
-        // Display a button for iOS users to request permission
         document.getElementById("incline").addEventListener("click", () => {
             DeviceOrientationEvent.requestPermission()
                 .then((response) => {
                     if (response === "granted") {
-                        // Permission granted, add event listeners
                         window.addEventListener("deviceorientation", orientationHandler);
                     } else {
                         window.alert("Permission is needed!");
@@ -202,7 +198,6 @@ const init = function() {
                 .catch(() => window.alert("Not supported"));
         });
     } else {
-        // Standard code without need for permission
         if (window.DeviceMotionEvent) {
             window.addEventListener("devicemotion", startHandler);
         }
@@ -228,6 +223,7 @@ const init = function() {
     document.getElementById("clear").addEventListener("click", buttonClickHandler);
     document.getElementById("left").addEventListener("click", buttonClickHandler);
     document.getElementById("start").addEventListener("click",startHandler);
+    document.getElementById("incline").addEventListener("click",orientationHandler)
 
 
 };
