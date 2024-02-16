@@ -1,0 +1,57 @@
+button {
+    background-color: wheat;
+    padding: 2vh 2vw;
+    width: 15vw;
+    border : none;
+    color: black;
+
+
+
+
+
+}
+button:active{
+    background-color: darkgoldenrod;
+
+}
+
+#keypad{
+    display: grid;
+    gap: 0.5vh;
+    grid-template-columns: repeat(3,15vw);
+}
+
+
+html{
+    background-color: silver;
+    font-size: 2vh;
+}
+
+#start{
+    padding: 2vh 2vw;
+    background-color: papayawhip;
+    margin-left: 10vw;
+    width: 65vw;
+}
+
+h1{
+    text-align: center;
+    color: black;
+}
+#incline{
+    text-align: center;
+}
+
+p{
+    font-size: 2vh;
+}
+#inputzone {
+    margin-left: 10vw;
+}
+#livezone > p{
+    text-align: center;
+    font-size: 2vh;
+    color: red;
+
+}
+

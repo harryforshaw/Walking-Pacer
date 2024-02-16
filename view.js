@@ -4,6 +4,11 @@ let timePara;
 let distancePara;
 let pacePara;
 let activePara;
+let startTime;
+let isStarted = false;
+let prev;
+let totalDistance;
+
 
 const highlightHandler = function(evt){
     //Handles clicks on a button
@@ -11,10 +16,15 @@ const highlightHandler = function(evt){
     if(evt.target !== activePara) {
         if (activePara) {
             activePara.innerText = activePara.innerText.replace('|', '');
+            activePara.style.color ='black';
         }
         activePara = evt.target;
         if (!activePara.innerText.includes('|')) {
             activePara.innerText += '|';
+            activePara.style.color='red';
+
+
+
         }
     }
 
@@ -53,15 +63,17 @@ const resultHandler = function (evt){
     let time = parseInt(timePara.innerText);
 
     if (distance >= 10 && time >= 5) {
+        localStorage.setItem('distance',distance);
+        localStorage.setItem('time',time);
         distance = distance /1000;
         const pace = (time / distance).toFixed(0);
         pacePara.innerText = pace + " mins/km";
+
     } else {
         pacePara.innerText = "--";
     }
 
 };
-let startLat,startLon,startTime;
 const startHandler = function (evt){
     let button = evt.target.innerText;
     let value = document.getElementById('start');
@@ -69,29 +81,36 @@ const startHandler = function (evt){
         navigator.geolocation.watchPosition(showPosition);
         startTime = Date.now();
         value.innerHTML = 'Stop';
+        isStarted = true;
     } else if(button === 'Stop') {
         value.innerText = 'Start';
         navigator.geolocation.clearWatch(showPosition);
-        startLat = null;
-        startLon = null;
+        prev = null;
+        isStarted = false;
     }
-
-
 };
 
 function showPosition(position) {
-    if(!startLat || !startLon){
-        startLat = position.coords.latitude;
-        startLon = position.coords.longitude;
-    } else {
-        let distance = calculateDistance(position);
-        document.getElementById('livedistance').innerText = distance.toFixed(0) + 'km';
-        calculatePace(distance);
+    if(isStarted) {
+        if(!prev){
+            prev = position.coords;
+        } else {
+            let current = position.coords;
+            let distance = calculateDistance(prev, current);
+            totalDistance += distance;
+            totalDistance =  distance * 1000;
+            document.getElementById('livedistance').innerText = distance.toFixed(0) + 'm';
+            calculatePace(distance);
+            prev = current;
+        }
     }
 }
-function calculateDistance(position){
-        let finalLat = position.coords.latitude;
-        let finalLon = position.coords.longitude;
+
+function calculateDistance(prev,current){ //https://stackoverflow.com/questions/14560999/using-the-haversine-formula-in-javascript
+        let finalLat = current.coords.latitude;
+        let finalLon = current.coords.longitude;
+        let startLat = prev.coords.latitude;
+        let startLon = prev.coords.longitude;
         const r = 6371;
         let lat = (finalLat - startLat) * (Math.PI / 180);
         let lon = (finalLon - startLon) * (Math.PI / 180);
@@ -109,46 +128,87 @@ function calculateDistance(position){
 function calculatePace(distance){
     let timeTaken = Date.now() - startTime;
     timeTaken /= 60000;
-    let pace = timeTaken /distance;
+    let pace = timeTaken /(distance/1000);
     document.getElementById('livepace').innerText = pace.toFixed(0) + 'mins/km';
 
 
 
 }
+const orientationHandler = function(event) {
 
-
-const inclineHandler = function (event){
     let inclinePara = document.getElementById('incline');
+    inclinePara.style.color = 'red';
     let slopeType = '';
-    let gamma = event.gamma;
-    let beta = event.beta;
 
-    let degree = Math.atan2(beta,gamma) * (180/Math.PI);
+    let degree = event.beta;
 
-    let percentage = Math.abs(Math.tan(degree) * 100);
+    let percentage = Math.abs(Math.tan(degree * (Math.PI/180)) * 100);
 
-    if(degree < 0){
+    if (degree < 0) {
         slopeType = 'Downhill';
-    } else{
+    } else {
         slopeType = 'Uphill';
     }
+    if (degree > 45) {
+        inclinePara.innerText = 'Lying flat';
+    } else {
 
-    inclinePara.innerText = `◬ ${percentage}% ${slopeType}(${degree}°) ◬`;
+
+        inclinePara.innerText = `◬ ${percentage.toFixed(0)}% ${slopeType}(${degree.toFixed(0)}°) ◬`;
+
+    }
     setTimeout(function (){
         inclinePara.innerText = '◬ Tap to show incline ◬';
+        inclinePara.style.color = 'black';
+        window.removeEventListener("deviceorientation",orientationHandler);
     },30000);
+
 
 };
 
+
+
 const init = function() {
-    timePara = document.getElementById("time");
-    timePara.innerText = "0";
+    let storeDistance = localStorage.getItem('distance');
+    let storeTime = localStorage.getItem('time');
     distancePara = document.getElementById("distance");
-    distancePara.innerText = "0";
+    timePara = document.getElementById("time");
+    if(storeTime === null) {
+        timePara.innerText = "0";
+
+    } else {
+        timePara.innerText = storeTime;
+    }
+    if(storeDistance === null) {
+        distancePara.innerText = "0";
+
+    } else {
+        distancePara.innerText = storeDistance;
+    }
     pacePara = document.getElementById("pace");
     pacePara.innerText = "...";
     activePara = distancePara;
     activePara.innerText += '|';
+    activePara.style.color='red';
+    if (window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission === "function") {
+        document.getElementById("incline").addEventListener("click", () => {
+            DeviceOrientationEvent.requestPermission()
+                .then((response) => {
+                    if (response === "granted") {
+                        window.addEventListener("deviceorientation", orientationHandler);
+                    } else {
+                        window.alert("Permission is needed!");
+                    }
+                })
+                .catch(() => window.alert("Not supported"));
+        });
+    } else {
+        if (window.DeviceOrientationEvent) {
+            window.addEventListener("deviceorientation", orientationHandler);
+        }
+    }
+
+
     document.getElementById("time").addEventListener("click",highlightHandler);
     document.getElementById("distance").addEventListener("click",highlightHandler);
     document.getElementById("pace").addEventListener("click",resultHandler);
@@ -165,7 +225,6 @@ const init = function() {
     document.getElementById("clear").addEventListener("click", buttonClickHandler);
     document.getElementById("left").addEventListener("click", buttonClickHandler);
     document.getElementById("start").addEventListener("click",startHandler);
-    document.getElementById("incline").addEventListener("click",inclineHandler);
 
 
 };

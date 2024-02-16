@@ -2,43 +2,51 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="stylesheet" href="mycss.css">
+    <link rel = "stylesheet" href = normalise.css>
     <meta charset="UTF-8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>Walking Pacer</title>
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <link rel="apple-touch-icon" sizes="128x128" href="">
-    <link rel="icon" sizes="192x192" href=""></head>
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" sizes="128x128" href="icon.png">
+    <link rel="icon" sizes="192x192" href="icon.png">
+</head>
 <body>
 <header></header>
 <main>
+    <h1>Speed Calculations</h1>
     <div id="inputzone">
+
         <p id="time"></p>
         <p id="distance"></p>
-        <p id="pace"></p>
+         <p id="pace"> Speed = </p>
         <div id="keypad">
-            <button id="b0">0</button>
-            <button id="b1">1</button>
-            <button id="b2">2</button>
-            <button id="b3">3</button>
-            <button id="b4">4</button>
-            <button id="b5">5</button>
-            <button id="b6">6</button>
             <button id="b7">7</button>
             <button id="b8">8</button>
             <button id="b9">9</button>
+            <button id="b4">4</button>
+            <button id="b5">5</button>
+            <button id="b6">6</button>
+            <button id="b1">1</button>
+            <button id="b2">2</button>
+            <button id="b3">3</button>
             <button id="clear">C</button>
+            <button id="b0">0</button>
             <button id="left">⇦</button>
         </div>
     </div>
     <div id="livezone">
+        <h1>Live Distance and Pace</h1>
+        <button id = "start">Start</button>
         <p id = "livedistance"></p>
         <p id = "livepace"></p>
-        <button id = "start">Start</button>
+
 
     </div>
     <div id="inclinezone">
+        <h1>Incline:</h1>
         <p id = "incline">◬ Tap to show incline ◬</p>
     </div>
 </main>
